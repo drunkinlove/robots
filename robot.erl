@@ -4,7 +4,7 @@
 
 loop({X, Y, Direction, Energy}, MsgReceiver) ->
 	receive
-		{step} -> 
+		step -> 
 			MsgReceiver ! {self(), "i moved!"},
 			case Direction of
 				north -> loop({X, Y - 1, Direction, Energy - 1}, MsgReceiver);
@@ -28,7 +28,7 @@ loop({X, Y, Direction, Energy}, MsgReceiver) ->
 				east -> loop({X, Y, north, Energy}, MsgReceiver);
 				south -> loop({X, Y, east, Energy}, MsgReceiver)
 			end;
-		{rest} -> 
+		rest -> 
 			MsgReceiver ! {self(), "going to rest!"};
 		_ ->
 			loop({X, Y, Direction, Energy}, MsgReceiver)

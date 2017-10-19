@@ -6,7 +6,7 @@ launch_receiver() ->
 
 msg_receiver() ->
 	receive
-		{Pid, step} -> 
+		{Pid, "i moved!"} -> 
 			io:format("~p moved ~n",[Pid]),
 			msg_receiver();
 		{Pid, "i turned left!"} -> 
@@ -29,7 +29,7 @@ turn(RobotName, Direction) ->
 	RobotName ! {turn, Direction}.
 
 move(RobotName) ->
-	RobotName ! {step}.
+	RobotName ! step.
 
 rest(RobotName) ->
-	RobotName ! {rest}.
+	RobotName ! rest.
