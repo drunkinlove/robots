@@ -1,35 +1,37 @@
 -module(robot).
--export([loop/1]).
+-export([loop/2]).
 
 
-loop({X, Y, Direction, Energy}) ->
+loop({X, Y, Direction, Energy}, MsgReceiver) ->
 	receive
-		{From, step} -> 
-			From ! {self(), "i moved!"},
+		{step} -> 
+			MsgReceiver ! {self(), "i moved!"},
 			case Direction of
-				north -> loop({X, Y - 1, Direction, Energy - 1});
-				west ->  loop({X - 1, Y, Direction, Energy - 1});
-				east -> loop({X + 1, Y, Direction, Energy - 1});
-				south -> loop({X, Y + 1, Direction, Energy - 1})
+				north -> loop({X, Y - 1, Direction, Energy - 1}, MsgReceiver);
+				west ->  loop({X - 1, Y, Direction, Energy - 1}, MsgReceiver);
+				east -> loop({X + 1, Y, Direction, Energy - 1}, MsgReceiver);
+				south -> loop({X, Y + 1, Direction, Energy - 1}, MsgReceiver)
 			end;
-		{From, turn, right} -> 
-			From ! {self(), "i turned right!"},
+		{turn, right} -> 
+			MsgReceiver ! {self(), "i turned right!"},
 			case Direction of
-				north -> loop({X, Y, east, Energy});
-				west ->  loop({X, Y, north, Energy});
-				east -> loop({X, Y, south, Energy});
-				south -> loop({X, Y, west, Energy})
+				north -> loop({X, Y, east, Energy}, MsgReceiver);
+				west ->  loop({X, Y, north, Energy}, MsgReceiver);
+				east -> loop({X, Y, south, Energy}, MsgReceiver);
+				south -> loop({X, Y, west, Energy}, MsgReceiver)
 			end;
-		{From, turn, left} ->
-			From ! {self(), "i turned left!"}, 
+		{turn, left} ->
+			MsgReceiver ! {self(), "i turned left!"}, 
 			case Direction of
-				north -> loop({X, Y, west, Energy});
-				west ->  loop({X, Y, south, Energy});
-				east -> loop({X, Y, north, Energy});
-				south -> loop({X, Y, east, Energy})
+				north -> loop({X, Y, west, Energy}, MsgReceiver);
+				west ->  loop({X, Y, south, Energy}, MsgReceiver);
+				east -> loop({X, Y, north, Energy}, MsgReceiver);
+				south -> loop({X, Y, east, Energy}, MsgReceiver)
 			end;
-		{From, rest} -> 
-			From ! {self(), "going to rest!"}
+		{rest} -> 
+			MsgReceiver ! {self(), "going to rest!"};
+		_ ->
+			loop({X, Y, Direction, Energy}, MsgReceiver)
 	end.
 		
 		

@@ -1,33 +1,35 @@
 -module(dispatch).
--export([launchdisp/0, make/1, turn/2, move/1, rest/1]).
+-export([launch_receiver/0, msg_receiver/0, make/2, turn/2, move/1, rest/1]).
 
-launchdisp() -> 
-	spawn(dispatch, msgreceiver, []).
+launch_receiver() -> 
+	spawn(?MODULE, msg_receiver, []).
 
-msgreceiver() ->
+msg_receiver() ->
 	receive
 		{Pid, step} -> 
 			io:format("~p moved ~n",[Pid]),
-			msgreceiver();
+			msg_receiver();
 		{Pid, "i turned left!"} -> 
 			io:format("~p turned left ~n",[Pid]),
-			msgreceiver();
+			msg_receiver();
 		{Pid, "i turned right!"} ->  
 			io:format("~p turned right ~n",[Pid]),
-			msgreceiver();
+			msg_receiver();
 		{Pid, "going to rest!"} ->  
 			io:format("~p resting ~n",[Pid]),
-			msgreceiver()
+			msg_receiver();
+		_ ->
+			msg_receiver()
 	end.
 
-make(State) -> 
-	spawn(robot, loop, [State]).
+make(State, MsgReceiver) -> 
+	spawn(robot, loop, [State, MsgReceiver]).
 
 turn(RobotName, Direction) ->
-	RobotName ! {self(), turn, Direction}.
+	RobotName ! {turn, Direction}.
 
 move(RobotName) ->
-	RobotName ! {self(), step}.
+	RobotName ! {step}.
 
 rest(RobotName) ->
-	RobotName ! {self(), rest}.
+	RobotName ! {rest}.
