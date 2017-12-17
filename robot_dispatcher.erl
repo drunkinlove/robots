@@ -14,10 +14,10 @@ handle_call({make, RobotName, {X, Y}}, _From, StateMap) ->
 	case cell_free(X, Y, StateMap) of
 		true ->
 			supervisor:start_child(
-								   	robot_gsup,
-									#{id => robot, 
-									  start => {robot, start_link, [{RobotName, X, Y, south, 10}, self()]}}
-								  ),
+							robot_gsup,
+							#{id => robot, 
+							start => {robot, start_link, [{RobotName, X, Y, south, 10}, self()]}}
+					      ),
 			{
 			 	reply, 
 			 	{created, {RobotName, X, Y}}, 
