@@ -1,38 +1,49 @@
 -module(robot).
--export([loop/2]).
+-export([start_link/1, loop/2, move/2, turn/3]).
 
 
-loop({X, Y, Direction, Energy}, MsgReceiver) ->
+start_link(Args) -> 
+	spawn_link(?MODULE, loop, Args).
+
+
+loop(State, From) ->
+	From ! State,
 	receive
-		step -> 
-			MsgReceiver ! {self(), "i moved!"},
-			case Direction of
-				north -> loop({X, Y - 1, Direction, Energy - 1}, MsgReceiver);
-				west ->  loop({X - 1, Y, Direction, Energy - 1}, MsgReceiver);
-				east -> loop({X + 1, Y, Direction, Energy - 1}, MsgReceiver);
-				south -> loop({X, Y + 1, Direction, Energy - 1}, MsgReceiver)
-			end;
-		{turn, right} -> 
-			MsgReceiver ! {self(), "i turned right!"},
-			case Direction of
-				north -> loop({X, Y, east, Energy}, MsgReceiver);
-				west ->  loop({X, Y, north, Energy}, MsgReceiver);
-				east -> loop({X, Y, south, Energy}, MsgReceiver);
-				south -> loop({X, Y, west, Energy}, MsgReceiver)
-			end;
-		{turn, left} ->
-			MsgReceiver ! {self(), "i turned left!"}, 
-			case Direction of
-				north -> loop({X, Y, west, Energy}, MsgReceiver);
-				west ->  loop({X, Y, south, Energy}, MsgReceiver);
-				east -> loop({X, Y, north, Energy}, MsgReceiver);
-				south -> loop({X, Y, east, Energy}, MsgReceiver)
-			end;
+		move -> 
+			move(State, From);
+		{turn, Where} -> 
+			turn(Where, State, From);
 		rest -> 
-			MsgReceiver ! {self(), "going to rest!"};
+			{Name, _, _, _} = State,
+			From ! {Name, goodbye};
 		_ ->
-			loop({X, Y, Direction, Energy}, MsgReceiver)
+			loop(State, From)
 	end.
 		
-		
 
+move({Name, X, Y, Direction, Energy}, From) ->
+	case Direction of
+		north -> loop({Name, X, Y - 1, Direction, Energy - 1}, From);
+		west ->  loop({Name, X - 1, Y, Direction, Energy - 1}, From);
+		east -> loop({Name, X + 1, Y, Direction, Energy - 1}, From);
+		south -> loop({Name, X, Y + 1, Direction, Energy - 1}, From)
+	end.
+
+
+turn(Where, {Name, X, Y, Direction, Energy}, From) ->
+	case Where of
+		left -> 
+			case Direction of
+				north -> loop({Name, X, Y, east, Energy}, From);
+				west ->  loop({Name, X, Y, north, Energy}, From);
+				east -> loop({Name, X, Y, south, Energy}, From);
+				south -> loop({Name, X, Y, west, Energy}, From)
+			end;
+		right -> 
+			case Direction of
+				north -> loop({Name, X, Y, west, Energy}, From);
+				west ->  loop({Name, X, Y, south, Energy}, From);
+				east -> loop({Name, X, Y, north, Energy}, From);
+				south -> loop({Name, X, Y, east, Energy}, From)
+			end
+	end.
