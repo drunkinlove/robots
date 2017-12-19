@@ -10,6 +10,13 @@
 init(_Args) -> {ok, _Args}.
 
 
+start_link() -> 
+	gen_server:start_link({global, robot_dispatcher}, 
+						   ?MODULE, 
+						   [#{}], 
+						   []).
+
+
 handle_call({make, RobotName, {X, Y}}, _From, StateMap) ->
 	case cell_free(X, Y, StateMap) of
 		true ->
@@ -42,13 +49,6 @@ handle_cast(_, StateMap) ->
 
 
 %%% Pass commands to server
-
-
-start_link() -> 
-	gen_server:start_link({global, robot_dispatcher}, 
-						   ?MODULE, 
-						   [#{}], 
-						   []).
 
 
 make(RobotName, {X, Y}) ->
